@@ -5,6 +5,5 @@ import dns from "node:dns";
 dns.setDefaultResultOrder("verbatim");
 
 export default defineConfig({
-  assetsInclude: ['**/*.wav'],
-  assetsInclude: ['**/*.csd'],
+  assetsInclude: ["**/*.wav", "**/*.csd"],
 });
