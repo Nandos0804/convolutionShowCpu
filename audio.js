@@ -1,7 +1,7 @@
 // IMPORT STATEMENT
 import * as Tone from "tone";
 import Csound from "@csound/browser";
-import { createDevice, MessageEvent } from "@rnbo/js";
+import { createDevice } from "@rnbo/js";
 import jsonRNBO from "./src/patch.export.json";
 import csd from "./src/main.csd?raw";
 
