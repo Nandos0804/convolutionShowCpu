@@ -1,22 +1,22 @@
+// IMPORT STATEMENT
 import * as Tone from "tone";
-
 import Csound from "@csound/browser";
-
 import { createDevice, MessageEvent } from "@rnbo/js";
-
 import jsonRNBO from "./src/patch.export.json";
+import csd from "./src/main.csd?raw";
 
+// VARIABLE
 let oldText = "";
-
-let WAContext = window.AudioContext || window.webkitAudioContext;
-let context = new WAContext();
 let initialized = false;
 let csound = null;
-let device, source, mic , convolver;
-import csd from "./src/main.csd?raw";
+let device, source, mic, convolver;
 let resources = ["./src/large.wav"];
 
+
+// TONEJS IMPLEMENTATION
+
 export async function pingTone() {
+  await Tone.start();
   changeButton(document.getElementById("startTone"));
   if (initialized) {
     mic.close();
@@ -31,7 +31,7 @@ export async function pingTone() {
   initialized = true;
 }
 
-// this is the JS function to run Csound
+// CSOUND IMPLEMENTATION
 export async function pingCsound() {
   changeButton(document.getElementById("startCsound"));
   if (csound != null) {
@@ -50,7 +50,9 @@ export async function pingCsound() {
   await csound.start();
 }
 
-const setup = async () => {
+//  RNBO IMPLEMENTATION
+
+export async function pingRNBO() {
   changeButton(document.getElementById("startRNBO"));
 
   if (device != null) {
@@ -62,7 +64,9 @@ const setup = async () => {
   }
 
   let patcher = jsonRNBO;
-
+  let WAContext = window.AudioContext || window.webkitAudioContext;
+  let context = new WAContext();
+  context.resume();
   device = await createDevice({ context, patcher });
 
   device.parameters.forEach((parameter) => {
@@ -82,10 +86,6 @@ const setup = async () => {
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
     .then(handleSuccess);
-};
-
-export async function pingRNBO() {
-  setup();
 }
 
 function changeButton(button) {
