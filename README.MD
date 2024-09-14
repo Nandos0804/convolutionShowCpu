@@ -2,6 +2,8 @@
 
 This repo was used to show at Icsc 2024 how we studied different cpu usage for almost same process of convolution 
 
-## To Do
+## How It Works
 
-- Add a way to stop the audio node, for now manually refresh the page to not alter result
+- npm install
+- npm run dev
+- localhost:5173
