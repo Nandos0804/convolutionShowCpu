@@ -6,43 +6,64 @@ import { createDevice, MessageEvent } from "@rnbo/js";
 
 import jsonRNBO from "./src/patch.export.json";
 
+let oldText = "";
+
 let WAContext = window.AudioContext || window.webkitAudioContext;
 let context = new WAContext();
-let csound = null;
 let initialized = false;
-let mic, recorder, player;
+let csound = null;
+let device, source, mic , convolver;
 import csd from "./src/main.csd?raw";
 let resources = ["./src/large.wav"];
 
 export async function pingTone() {
-  if (!initialized) {
-    const mic = new Tone.UserMedia().toDestination();
-    mic.open();
-    initialized = true;
-    const convolver = new Tone.Convolver(String(resources[0])).toDestination();
-    mic.fan(convolver);
+  changeButton(document.getElementById("startTone"));
+  if (initialized) {
+    mic.close();
+    convolver.dispose();
+    initialized = false;
+    return;
   }
+  mic = new Tone.UserMedia().toDestination();
+  mic.open();
+  convolver = new Tone.Convolver(String(resources[0])).toDestination();
+  mic.fan(convolver);
+  initialized = true;
 }
 
 // this is the JS function to run Csound
 export async function pingCsound() {
-  if (csound == null) {
-    const csound = await Csound();
-    const fileUrl = resources[0];
-    const f = await fetch(fileUrl);
-    const fName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-    const path = `${fName}`;
-    const buffer = await f.arrayBuffer();
-    await csound.fs.writeFile(path, new Uint8Array(buffer));
-    await csound.compileCsdText(csd);
-    await csound.start();
+  changeButton(document.getElementById("startCsound"));
+  if (csound != null) {
+    csound.destroy();
+    csound = null;
+    return;
   }
+  csound = await Csound();
+  const fileUrl = resources[0];
+  const f = await fetch(fileUrl);
+  const fName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+  const path = `${fName}`;
+  const buffer = await f.arrayBuffer();
+  await csound.fs.writeFile(path, new Uint8Array(buffer));
+  await csound.compileCsdText(csd);
+  await csound.start();
 }
 
 const setup = async () => {
+  changeButton(document.getElementById("startRNBO"));
+
+  if (device != null) {
+    device.node.disconnect();
+    source.disconnect();
+    device = null;
+    source = null;
+    return;
+  }
+
   let patcher = jsonRNBO;
 
-  let device = await createDevice({ context, patcher });
+  device = await createDevice({ context, patcher });
 
   device.parameters.forEach((parameter) => {
     console.log(parameter.id);
@@ -54,9 +75,8 @@ const setup = async () => {
 
   device.node.connect(context.destination);
 
-  // Assuming you have a RNBO device already, and an audio context as well
   const handleSuccess = (stream) => {
-    const source = context.createMediaStreamSource(stream);
+    source = context.createMediaStreamSource(stream);
     source.connect(device.node);
   };
   navigator.mediaDevices
@@ -66,4 +86,17 @@ const setup = async () => {
 
 export async function pingRNBO() {
   setup();
+}
+
+function changeButton(button) {
+  if (button.innerHTML != "Stop!") {
+    oldText = button.innerHTML;
+    button.innerHTML = "Stop!";
+    button.classList.remove("btn-primary");
+    button.classList.add("btn-danger");
+  } else {
+    button.innerHTML = oldText;
+    button.classList.add("btn-primary");
+    button.classList.remove("btn-danger");
+  }
 }
