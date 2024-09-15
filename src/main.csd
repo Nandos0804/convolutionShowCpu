@@ -5,7 +5,7 @@
 ;Realtime Convolution for multiplatform export
 ;Giuseppe Ernandez Constp 2024
 ;============================================================
--odac -iadc
+-odac -iadc -d
 </CsOptions>
 
 <CsInstruments>
@@ -13,8 +13,9 @@
 ;PARAMETRI DI CONTROLLO
 ;============================================================
 sr = 48000
-ksmps = 256
+ksmps = 32
 nchnls = 2
+nchnls_i = 1 
 0dbfs  = 1
 
 ;============================================================
@@ -22,30 +23,15 @@ nchnls = 2
 ;============================================================
 instr Main
 
-      ; dry wet
-      kmix = 0.5
-      kgain = 0.5
-      ;volume generico
-      kvol  = 0.5 * kmix
-
-      ; Dimensione delle partizioni per la convoluzione
-      ipartitionsize = 512
-
-      ; Calcolo latenza, copiato dal sorgente
-      idel = (ksmps < ipartitionsize ? ipartitionsize + ksmps : ipartitionsize)/sr
-
-      ; Input
-      al, ar ins
-
-      ; IR44 file impulso stereo
-      awetl, awetr pconvolve kvol*(al+ar), "large.wav", ipartitionsize
-      
-      ; Delay del segnale per compensare con tempi di calcolo
-      ; convoluzione e mettere "a tempo" il riv.
-      adryl delay (1-kmix)*al, idel
-      adryr delay (1-kmix)*al, idel
-
-      outs (adryl+awetl)*kgain, (adryr+awetr)*kgain
+      kmix = .5
+      kvol  = .5 * kmix
+      iPartSize = 2048
+      idel = (ksmps < iPartSize ? iPartSize + ksmps : iPartSize)/sr
+      aInput in
+      awetl, awetr pconvolve kvol*aInput,"large.wav", iPartSize
+      adryl delay (1-kmix)*aInput, idel
+      adryr delay (1-kmix)*aInput, idel
+            outs adryl+awetl, adryr+awetr
 endin
 
 ; Prima chiamata, punto di inizio del programma
