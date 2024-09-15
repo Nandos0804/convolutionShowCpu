@@ -10,7 +10,14 @@ let oldText = "";
 let initialized = false;
 let csound = null;
 let device, source, mic, convolver;
+// p convolve, large file
 let resources = ["./src/large.wav"];
+// p convolve, small file
+// let resources = ["./src/small.wav"];
+// convolve, large file
+// let resources = ["./src/large.wav", "./src/large.cva"];
+// convolve, small file;
+// let resources = ["./src/small.wav", "./src/small.cva"];
 
 
 // TONEJS IMPLEMENTATION
@@ -40,12 +47,16 @@ export async function pingCsound() {
     return;
   }
   csound = await Csound();
-  const fileUrl = resources[0];
-  const f = await fetch(fileUrl);
-  const fName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-  const path = `${fName}`;
-  const buffer = await f.arrayBuffer();
-  await csound.fs.writeFile(path, new Uint8Array(buffer));
+  // Loading Resources
+  for (let i = 0; i < resources.length; i++) {
+    const fileUrl = resources[i];
+    const f = await fetch(fileUrl);
+    const fName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+    const path = `${fName}`;
+    const buffer = await f.arrayBuffer();
+    await csound.fs.writeFile(path, new Uint8Array(buffer));
+  }
+  //
   await csound.compileCsdText(csd);
   await csound.start();
 }

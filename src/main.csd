@@ -34,8 +34,28 @@ instr Main
             outs adryl+awetl, adryr+awetr
 endin
 
-; Prima chiamata, punto di inizio del programma
-schedule("Main", 0, -1 )    
+instr Alt
+
+      imix = 0.8
+      ivol = 1 
+      idel   filelen "small.wav" ; change according to import
+      print  idel
+      ichnls filenchnls  "small.wav" ; change according to import
+      print  ichnls
+      aInput in
+      awet1, awet2 convolve aInput,"small.cva" ; change according to import
+      awet1   diff    awet1                   
+      awet2   diff    awet2                   
+      adrydel delay   (1-imix)*aInput, idel     
+      
+      outs    ivol*(adrydel+imix*awet1),ivol*(adrydel+imix*awet2)
+
+endin
+; For Main
+schedule("Main", 0, -1 )
+; For Alt
+; schedule("Alt", 0, -1 )
+
 </CsInstruments>
 
 <CsScore>

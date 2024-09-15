@@ -2,5 +2,5 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  assetsInclude: ["**/*.wav", "**/*.csd"],
+  assetsInclude: ["**/*.wav", "**/*.csd","**/*.cva"],
 });
